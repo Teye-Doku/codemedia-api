@@ -19,7 +19,7 @@ locals {
 
 
 source "amazon-ebs" "nomad" {
-  ami_name = "nomad-ec2-${local.timestamp}"
+  ami_name = "codemedia-ec2-${local.timestamp}"
   instance_type = "t2.micro"
   region = var.region
 
