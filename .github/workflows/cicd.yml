@@ -1,5 +1,8 @@
 name: codemedia-api-cicd
-
+env:
+  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+  AWS_DEFAULT_REGION: ${{secrets.AWS_DEFAULT_REGION}}
 on:
   push:
     branches:
@@ -41,3 +44,18 @@ jobs:
       - run: docker push courageabam/codemedia
 
 
+  build_ami:
+    name: build packer image
+    runs-on: ubuntu-latest
+    env:
+      PKR_VAR_docker_username: ${{secrets.DOCKER_USERNAME}}
+      PKR_VAR_docker_password: ${{secrets.DOCKER_PASSWORD}}
+    environment: codemedia-stage
+    needs: build_push_image
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v2
+      - name: install packer on runner
+        run: bash .deploy/scripts/packer-install.sh
+      - run: cd .deploy/packer && packer validate image.pkr.hcl
+      - run: cd .deploy/packer && packer build image.pkr.hcl 
